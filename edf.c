@@ -22,9 +22,6 @@ typedef struct
     int remainingTime; //Used when process execution is paused
 }ProcessStruct;
 
-
-//Helper Functions:
-
 //Defining gcd and lcm functions -> gcd will be called in lcm:
 int gcd(int a, int b) //Greatest Common Divisor
 {
@@ -37,7 +34,6 @@ int lcm(int a, int b) //Least Common Multiple
 {
     return (a/gcd(a,b))*b;
 }
-
 
 void insertionSort(ProcessStruct arr[], int numofProcesses)
 {
@@ -57,6 +53,44 @@ void insertionSort(ProcessStruct arr[], int numofProcesses)
 }
 
 void getCurrentStateOfProcessQueue(int time, ProcessStruct arr[], int size){
+    printf("%d: processes:", time);
+    for (int i = 0; i < size; i++) {
+        printf(" %d (%d ms)", arr[i].processID, arr[i].remainingTime);
+    }
+    printf("\n");
+}
+
+void popFirstProcessFromProcessQueue(ProcessStruct arr[], int* size){
+    //Called when a processes remaining time is 0
+    for(int i = 0; i < size; i++){
+        arr[i] = arr[i+1]; //Shifts all the processes to the left 
+    }
+    *size-=1;
+}
+
+void checkForPastDeadlines(int time, int * processQueueSize, ProcessStruct processQueue[], int processArraySize, ProcessStruct processArray[]){
+    printf("Checking for past deadlines\n");
+    for(int i = 0; i < processArraySize; i++){
+        //Check if each process is past its deadline 
+        int passed = time%processArray[i].deadline==0;
+        if(passed){ //If the deadline has passed, we must retreive the information on the process 
+            for (int j = 0; j < *processQueueSize; j++) {
+                //Check the process queue to update info on each instance of the same process
+                if(processQueue[j].processID == processArray[i].processID){
+                    //update the process info
+                    if (processQueue[j].deadline > time){ //If the deadline of the process in the process queue is greater than the current time you don't want to update the deadline
+                        continue;
+                    }
+                    printf("%d: process %d missed deadline (%d ms left)\n", time, processQueue[j].processID, processQueue[j].remainingTime);
+                    //Because we now that the current time is some form of x * deadline, modulo returned 0 we can update the deadlines using the current time
+                    processQueue[i].deadline = time + processArray[i].period;    
+                }
+
+                if 
+
+            }
+        }
+    }
 
 }
 
@@ -107,7 +141,6 @@ int main(){
     ///// Invoking EDF Scheduler /////
     ///////////////////////////////////
 
-    // int time = 0;
     insertionSort(processArray, numOfProcesses); //Sorting the process array in ascending order based on deadlines. This is the initial order of the process array
 
     if (minIncrement > 1){ //Setting the min amount to increment by and check if a new smallest deadline exists 
@@ -118,26 +151,38 @@ int main(){
         printf("%d\n", processArray[i].processID);
     }
 
-    //Creating scheduler array and 
-    //adding the initial processes to the scheduler array
-    
-    ProcessStruct* processQueue = (ProcessStruct *) malloc(numOfProcesses*sizeof(ProcessStruct)); //Allocating memory for the processes
+
+    ProcessStruct* processQueue = (ProcessStruct *) malloc(numOfProcesses*sizeof(ProcessStruct)); //Creating scheduler array and adding the initial processes to the scheduler array
     for(int i = 0; i<numOfProcesses; i++){
         processQueue[i] = processArray[i];
     }
 
 
-    int time = INT_MAX; //Current Time Stamp
-    ProcessStruct running = processQueue[0]; //Current running process
-    int totalProcsCreated = 0; //Total number of processes created throughout the entire scheduler execution
+    int time = 0; //Current Time Stamp
+    int processQueueSize = numOfProcesses; //Initial size of the process queue is just the number of processes
     int sumOfWaitingTimes = 0; //Sum of waiting times of all processes throughout the entire scheduler execution
+
+    //Initializing first running process in the queue
+    ProcessStruct running = processQueue[0]; //Current running process
+    int totalProcsCreated = 1; //Total number of processes created throughout the entire scheduler execution
+    getCurrentStateOfProcessQueue(0, processQueue, processQueueSize);
+    printf("%d: process %d starts", time, processQueue[0].processID);
+    running.remainingTime = running.remainingTime - minIncrement; //move this inside the loop!!!!!!!!
+
+
 
     //MAIN SCHEDULER LOOP
     while (time < maxtime){ //Looping through the process array until the time is less than the max time
 
-    
-
-
+        if (running.remainingTime < 0){
+            //update process details and switch to next process in the process queue
+            popFirstProcessFromProcessQueue(processQueue, &processQueueSize);
+        }else{
+            //otherwise, continue running the current process
+            running.remainingTime = running.remainingTime - minIncrement; //move this inside the loop
+        }
+        
+        
 
 
 
@@ -157,7 +202,7 @@ int main(){
     printf("%d: Max Time reached\n", maxtime);
     printf("Sum of all waiting times: %d\n", sumOfWaitingTimes);
     printf("Number of processes created: %d\n", totalProcsCreated);
-    printf("Average Wiating Time: %ld\n", (double)sumOfWaitingTimes/totalProcsCreated);
+    printf("Average Waiting Time: %f\n", (double)sumOfWaitingTimes/totalProcsCreated);
 
     free(processArray);
     free(processQueue);
