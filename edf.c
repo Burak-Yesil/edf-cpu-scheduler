@@ -56,6 +56,10 @@ void insertionSort(ProcessStruct arr[], int numofProcesses)
     }
 }
 
+void getCurrentStateOfProcessQueue(int time, ProcessStruct arr[], int size){
+
+}
+
 
 
 int main(){
@@ -70,7 +74,7 @@ int main(){
 
     printf("Enter the number of processes to schedule: ");
     scanf("%d",&numOfProcesses); //Scanning the user for the number of processes to be scheduled
-    ProcessStruct processArray[numOfProcesses];
+    ProcessStruct* processArray = (ProcessStruct *) malloc(numOfProcesses*sizeof(ProcessStruct)); //Allocating memory for the processes
     //Scanning the user for the CPU Time and Period of each process
     for(int i = 0; i<numOfProcesses; i++){
         processArray[i].processID = i+1; //Assigning the process ID to i 
@@ -110,26 +114,53 @@ int main(){
         minIncrement = 1;
     }
 
-    for (int i = 0; i < numOfProcesses; i++){
+    for (int i = 0; i < numOfProcesses; i++){ //Used for debugging purposes ----> Shows initial sorted process array
         printf("%d\n", processArray[i].processID);
     }
 
-    // while (time < maxtime){ //Looping through the process array until the time is less than the max time
+    //Creating scheduler array and 
+    //adding the initial processes to the scheduler array
+    
+    ProcessStruct* processQueue = (ProcessStruct *) malloc(numOfProcesses*sizeof(ProcessStruct)); //Allocating memory for the processes
+    for(int i = 0; i<numOfProcesses; i++){
+        processQueue[i] = processArray[i];
+    }
 
 
-    //     // Steps: 
-    //     // Find smallest deadline 
-    //     // Print Start time, Starting process x
-    //     // Increment global time by minIncrement 
-    //     // decrement process time by minIncrement
-    //     // if remaining time is 0
-    //     //     update process struct to be ready for next scheduling so new deadline, start time, etc
-    //     // else
-    //     //     just go to the top of the loop
-        
-        
+    int time = INT_MAX; //Current Time Stamp
+    ProcessStruct running = processQueue[0]; //Current running process
+    int totalProcsCreated = 0; //Total number of processes created throughout the entire scheduler execution
+    int sumOfWaitingTimes = 0; //Sum of waiting times of all processes throughout the entire scheduler execution
 
-    // }
+    //MAIN SCHEDULER LOOP
+    while (time < maxtime){ //Looping through the process array until the time is less than the max time
+
+    
+
+
+
+
+
+        //ORIGINAL APPROACH:    
+        // Steps: 
+        // Find smallest deadline 
+        // Print Start time, Starting process x
+        // Increment global time by minIncrement 
+        // decrement process time by minIncrement
+        // if remaining time is 0
+        //     update process struct to be ready for next scheduling so new deadline, start time, etc
+        // else
+        //     just go to the top of the loop
+
+    }
+
+    printf("%d: Max Time reached\n", maxtime);
+    printf("Sum of all waiting times: %d\n", sumOfWaitingTimes);
+    printf("Number of processes created: %d\n", totalProcsCreated);
+    printf("Average Wiating Time: %ld\n", (double)sumOfWaitingTimes/totalProcsCreated);
+
+    free(processArray);
+    free(processQueue);
 
     return 0;
 }
