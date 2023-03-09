@@ -62,7 +62,9 @@ void getCurrentStateOfProcessQueue(int time, ProcessStruct arr[], int size){
 
 void popFirstProcessFromProcessQueue(ProcessStruct arr[], int* size){
     //Called when a processes remaining time is 0
-    for(int i = 0; i < size; i++){
+    printf("Popping first process from process queue\n");
+    for(int i = 0; i < *size; i++){
+        printf("%d\n", i);
         arr[i] = arr[i+1]; //Shifts all the processes to the left 
     }
     *size-=1;
@@ -86,14 +88,13 @@ void checkForPastDeadlines(int time, int * processQueueSize, ProcessStruct proce
                     processQueue[i].deadline = time + processArray[i].period;    
                 }
 
-                if 
+                
 
             }
         }
     }
 
 }
-
 
 
 int main(){
@@ -147,9 +148,9 @@ int main(){
         minIncrement = 1;
     }
 
-    for (int i = 0; i < numOfProcesses; i++){ //Used for debugging purposes ----> Shows initial sorted process array
-        printf("%d\n", processArray[i].processID);
-    }
+    // for (int i = 0; i < numOfProcesses; i++){ //Used for debugging purposes ----> Shows initial sorted process array
+    //     printf("%d\n", processArray[i].processID);
+    // }
 
 
     ProcessStruct* processQueue = (ProcessStruct *) malloc(numOfProcesses*sizeof(ProcessStruct)); //Creating scheduler array and adding the initial processes to the scheduler array
@@ -161,42 +162,45 @@ int main(){
     int time = 0; //Current Time Stamp
     int processQueueSize = numOfProcesses; //Initial size of the process queue is just the number of processes
     int sumOfWaitingTimes = 0; //Sum of waiting times of all processes throughout the entire scheduler execution
+    ProcessStruct null = {.processID = 0}; //Used as null since you can't set a struct to null
+
 
     //Initializing first running process in the queue
     ProcessStruct running = processQueue[0]; //Current running process
     int totalProcsCreated = 1; //Total number of processes created throughout the entire scheduler execution
     getCurrentStateOfProcessQueue(0, processQueue, processQueueSize);
-    printf("%d: process %d starts", time, processQueue[0].processID);
+    printf("%d: process %d starts\n", time, processQueue[0].processID);
     running.remainingTime = running.remainingTime - minIncrement; //move this inside the loop!!!!!!!!
 
 
 
     //MAIN SCHEDULER LOOP
     while (time < maxtime){ //Looping through the process array until the time is less than the max time
-
-        if (running.remainingTime < 0){
+        // printf("Time: %d\n", time);
+        if (running.remainingTime <= 0){
             //update process details and switch to next process in the process queue
+            printf("%d: process %d ends\n", time, running.processID);
             popFirstProcessFromProcessQueue(processQueue, &processQueueSize);
+            //Make old deadline equal to the new deadline plus to period *******-
+            running = null;
         }else{
-            //otherwise, continue running the current process
+            // checkForPastDeadlines(time, &processQueueSize, processQueue, numOfProcesses, processArray); //Checking if processes have passed their deadline, if so the array updating is handled.
+            if (processQueueSize == 0){ //The process queue maybe empty. In that case we are waiting and so we increment the sumOfWaitingTime.
+                sumOfWaitingTimes += 1;
+                time += minIncrement; //Incrementing the time stamp
+                continue;
+            }//otherwise, continue running the current process
+            printf("Continuing running process %d\n", running.processID);
             running.remainingTime = running.remainingTime - minIncrement; //move this inside the loop
+            time += minIncrement; //Incrementing the time stamp
         }
-        
-        
+    }
 
-
-
-        //ORIGINAL APPROACH:    
-        // Steps: 
-        // Find smallest deadline 
-        // Print Start time, Starting process x
-        // Increment global time by minIncrement 
-        // decrement process time by minIncrement
-        // if remaining time is 0
-        //     update process struct to be ready for next scheduling so new deadline, start time, etc
-        // else
-        //     just go to the top of the loop
-
+    if (running.remainingTime < 0){
+        //update process details and switch to next process in the process queue
+        printf("%d: process %d ends\n", time, running.processID);
+        popFirstProcessFromProcessQueue(processQueue, &processQueueSize);
+        running = null;
     }
 
     printf("%d: Max Time reached\n", maxtime);
@@ -211,3 +215,4 @@ int main(){
 }
 
 
+//Add new instances of the struct to the queue and pop them when done 
